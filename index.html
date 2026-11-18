@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Anime CG 角色实时建模与电影级渲染器</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #f5f0f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      color: #4a3f55;
+    }
+    #canvas-container {
+      width: min(92vh, 92vw);
+      height: min(92vh, 92vw);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 55px rgba(120, 95, 140, 0.16);
+      background: #fdfcfe;
+      position: relative;
+    }
+    body.batch-mode #canvas-container {
+      width: auto;
+      height: auto;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    #ui-bar {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(255, 252, 255, 0.86);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(210, 190, 220, 0.55);
+      box-shadow: 0 8px 28px rgba(110, 85, 130, 0.12);
+      font-size: 13px;
+      z-index: 20;
+    }
+    button {
+      padding: 6px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(190, 165, 208, 0.65);
+      background: #fff;
+      color: #554566;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    button:hover {
+      background: #f9eef6;
+      border-color: #d4b2cc;
+    }
+    #timeline {
+      width: 180px;
+      accent-color: #d89bb8;
+    }
+    #time-label, #stats-label {
+      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      color: #786888;
+      white-space: nowrap;
+    }
+  </style>
+  <script>
+    if (new URLSearchParams(location.search).get('job')) {
+      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('batch-mode'));
+    }
+    const origErr = console.error.bind(console);
+    console.error = (...args) => {
+      origErr(...args);
+      fetch('/log-error', { method: 'POST', body: args.map(String).join(' ') }).catch(() => {});
+    };
+    window.addEventListener('error', (e) => {
+      fetch('/log-error', { method: 'POST', body: String(e.error?.stack || e.message) }).catch(() => {});
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      fetch('/log-error', { method: 'POST', body: String(e.reason?.stack || e.reason) }).catch(() => {});
+    });
+  </script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div id="ui-bar">
+    <button id="btn-play">暂停短片</button>
+    <input id="timeline" type="range" min="0" max="8" step="0.01" value="0.75" />
+    <span id="time-label">0.75s / 8.00s</span>
+    <button id="btn-cam">切换自由 360° 视角</button>
+    <button id="btn-mode">查看白模/线框拓扑</button>
+    <span id="stats-label"></span>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

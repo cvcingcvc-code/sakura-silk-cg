@@ -1,0 +1,8 @@
+node_modules/
+output/frames/
+output/.chrome_headless_profile/
+output/*.png
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

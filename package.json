@@ -1,0 +1,28 @@
+{
+  "name": "sakura-silk-cg",
+  "version": "1.0.0",
+  "description": "High-fidelity Japanese 3D Anime CG character reconstruction, custom GLSL normal/SSS relighting, sub-pixel facial rig & 8s 24fps cinematic rendering pipeline built with Three.js.",
+  "main": "serve.js",
+  "scripts": {
+    "start": "node serve.js",
+    "build:assets": "python build_3d_assets.py",
+    "render:preview": "node render_runner.js preview 1440",
+    "render:video": "node render_runner.js video 1080 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cvcingcvc-code/sakura-silk-cg.git"
+  },
+  "keywords": [
+    "threejs",
+    "webgl",
+    "glsl",
+    "anime-3d",
+    "cg-rendering",
+    "subsurface-scattering"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.187.0"
+  }
+}
