@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 from scipy.ndimage import gaussian_filter
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(BASE_DIR, "assets")
 SRC_IMG = os.path.join(OUT_DIR, "source_cg_reference.jpg")
 os.makedirs(OUT_DIR, exist_ok=True)

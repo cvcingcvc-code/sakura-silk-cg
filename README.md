@@ -1,80 +1,108 @@
 # Sakura Silk CG (`sakura-silk-cg`)
 
-基于 **Three.js**、**自定义 GLSL 着色器** 与 **Python 16-bit 深度/法线重建管线** 实现的高保真日系 3D Anime CG 角色建模、实时视差交互与 **8 秒 24fps 电影级短片渲染系统**。
-
 <p align="center">
-  <img src="docs/hero_beauty.jpg" width="48%" alt="Hero 3D CG Render" />
-  <img src="docs/closeup_final.jpg" width="48%" alt="85mm Close-up Render" />
+  <b>高保真日系 3D Anime CG 角色重建、动态法线重打光与 8s 24fps 电影级短片实时渲染工程</b><br/>
+  <sub>Built with Three.js · Custom GLSL Shaders · 16-bit Depth & Surface Normal Reconstruction</sub>
 </p>
 
 <p align="center">
-  <img src="docs/normal_map.jpg" width="48%" alt="3D Surface Normal Map" />
-  <img src="docs/hero_wireframe.jpg" width="48%" alt="460k-Triangle 3D Relief Wireframe" />
+  <img src="docs/hero_beauty.jpg" width="32%" alt="0.4s 半身主视觉渲染" />
+  <img src="docs/mid_smile_orbit.jpg" width="32%" alt="3.8s 环绕抬眸浅笑关键帧" />
+  <img src="docs/closeup_final.jpg" width="32%" alt="7.6s 85mm 面部特写定格" />
 </p>
 
----
+<p align="center">
+  <img src="docs/normal_map.jpg" width="48.5%" alt="3D 表面法线贴图" />
+  <img src="docs/hero_wireframe.jpg" width="48.5%" alt="46万面三维深度浮雕白模与线框拓扑" />
+</p>
 
-## 核心特性
-
-- **460,800 三角面 16-bit 三维置换网格**：通过 `build_3d_assets.py` 融合角色解剖体块深度先验与明暗恢复形状（Shape-from-Shading）微结构浮雕，将 16-bit 高度场编码至 RG 双通道，消除 8-bit 台阶伪影。
-- **动态法线重打光与逆光半透明发丝（SSS / Rim Scattering）**：实时计算表面法线贴图在镜头环绕与体积逆光变化下的漫反射增量、各向异性微高光与银粉色边缘散射。
-- **零失真刚性锁与三维风场物理模拟**：利用四通道语义权重图（`rig_masks.png`）严格锁定面部骨骼、五官与双手结构零形变，同时驱动粉白长发、耳侧白色丝绸蝴蝶结飘带与多层荷叶边欧根纱裙摆产生自然的风场行波运动。
-- **亚像素面部表演绑定**：支持 `2–4s` 柔和抬眸看向镜头、纤长睫毛微颤、自然浅笑以及 `6–8s` 顺滑眨眼动画。
-- **三维前景氛围粒子与折射晶簇**：内置物理透射八面体水晶碎片（`ior = 1.56` + 蓝紫虹彩反射）、面颊飘过的半透明 3D 发丝与 150 颗浅景深三维散景光粒。
+> **成品短片预览 / 下载**：[`output/anime_3d_cg_8s_24fps.mp4`](output/anime_3d_cg_8s_24fps.mp4)（`1080×1080` · `24fps` · 共 `192` 帧）
 
 ---
 
-## 快速开始
+## 核心技术架构
 
-### 1. 安装依赖并启动实时 3D 交互预览器
+1. **460,800 三角面 16-bit 三维置换网格**  
+   通过 [`scripts/build_3d_assets.py`](scripts/build_3d_assets.py) 融合角色解剖体块三维先验与明暗恢复形状（Shape-from-Shading）微结构浮雕，将 `16-bit` 连续高度场打包至 `RG` 双通道（`assets/depth_map.png`），消除传统 8-bit 深度图的断层伪影。
+2. **动态法线重打光与逆光半透明发丝（SSS / Rim Scattering）**  
+   基于精细法线贴图（`assets/normal_map.png`）在 GLSL 片元着色器中实时计算随 3D 镜头视差环绕变化的银粉色漫反射增量、发丝各向异性高光及逆光边缘散射。
+3. **零失真刚性锁与分区域物理风场模拟**  
+   利用四通道语义遮罩（`assets/rig_masks.png`）锁定角色面部骨骼、五官与胸前双手结构 `100%` 零形变；仅对超长粉白发束、耳侧白色丝绸蝴蝶结飘带与多层荷叶边薄纱连衣裙施加三维风场行波运动。
+4. **Live2D 级亚像素表情与镜头分镜状态机（`0–8s`）**  
+   - `0–2s`：`85mm` 人像镜头自正侧方缓慢推进，微风轻拂长发，三维散景光粒漂浮。
+   - `2–4s`：镜头向右平滑环绕产生真实三维视差，灰紫眼眸轻抬看向镜头、纤长睫毛微颤并浮现自然浅笑。
+   - `4–6s`：风力微增，丝绸蝴蝶结与薄纱荷叶边裙摆轻盈摆动，逆光穿透半透明发丝，折射八面体水晶闪烁柔和蓝紫光芒。
+   - `6–8s`：平滑定格于少女面部浅景深特写，自然眨眼，前景半透明 3D 发丝从面颊旁轻柔滑过。
+
+---
+
+## 快速运行指南
+
+### 1. 启动实时 3D 交互预览器
 
 ```bash
 npm install
 npm start
 ```
 
-浏览器访问 `http://127.0.0.1:3080`，支持：
-- 播放 / 暂停 / 拖拽 **0.00s – 8.00s** 电影分镜时间轴
-- 切换 **自由 3D 视差视角**（鼠标拖拽环绕、滚轮缩放）
-- 一键切换 **3D 浮雕白模 / 线框拓扑视图**
+打开浏览器访问 `http://127.0.0.1:3080`：
+- 支持播放 / 暂停 / 任意拖拽 **0.00s – 8.00s** 电影运镜时间轴
+- 支持切换 **自由 3D 视差视角**（鼠标旋转、滚轮缩放）
+- 支持一键切换 **3D 浮雕白模 / 线框拓扑视图**
 
-### 2. 重新生成 16-bit 深度、法线与物理权重贴图（可选）
+### 2. 重新构建三维深度、法线与权重资产（可选）
 
 ```bash
-# 依赖 Python numpy, Pillow, scipy
+# 需要 Python 3 环境 (numpy, Pillow, scipy)
 npm run build:assets
 ```
 
-### 3. 离线渲染高清静帧与 8 秒 24fps MP4 短片
+### 3. 硬件加速离线渲染静帧与 8 秒 MP4 短片
 
 ```bash
-# 渲染 1440x1440 预览静帧与线框图
+# 渲染 1440x1440 高清关键帧与三维线框验证图
 npm run render:preview
 
-# 逐帧渲染 192 帧 (1080x1080 @ 24fps) 并调用 FFmpeg 合成 MP4
+# 逐帧渲染 192 帧 (1080x1080 @ 24fps) 并调用本地 FFmpeg 编码 H.264 MP4
 npm run render:video
 ```
 
-成品视频输出路径：`output/anime_3d_cg_8s_24fps.mp4`。
-
 ---
 
-## 目录结构
+## 仓库目录结构
 
 ```text
 sakura-silk-cg/
-├── assets/                     # 1536p 高清纹理、16-bit 深度图、表面法线贴图与四通道物理绑定遮罩
-├── docs/                       # 渲染成品与三维网格拓扑展示图
-├── output/                     # 导出的 8s 24fps 电影级短片 (MP4)
-├── src/
-│   ├── main.js                 # Three.js 85mm 镜头运镜状态机、交互控制与离线逐帧导出
-│   ├── cinematic3dCharacter.js # 46万面 3D 置换网格、动态法线重打光与亚像素表情 GLSL 着色器
-│   ├── shaders.js              # 扩展程序化 SSS 皮肤、Kajiya-Kay 发丝与薄纱着色器库
-│   ├── headAndBody.js          # 扩展参数化三维头雕与手部骨骼模块
-│   ├── hairAndCostume.js       # 扩展 Catmull-Rom 3D 发束与多层荷叶边薄纱模块
-│   └── atmosphere.js           # 扩展三维晶簇、轻羽与体积光带模块
-├── build_3d_assets.py          # Python 16-bit 深度场、法线贴图与物理权重生成脚本
-├── render_runner.js            # 自动化 Headless WebGL 硬件加速渲染与 FFmpeg 编码器
-├── serve.js                    # 本地开发与交互预览服务器
-└── index.html                  # WebGL 交互预览前端入口
+├── assets/                     # 3D 重建核心纹理资产
+│   ├── albedo_hd.jpg           # 1536×1536 高清角色 CG 色彩纹理
+│   ├── depth_map.png           # 16-bit RG 双通道高精度三维深度图
+│   ├── normal_map.png          # 表面法线贴图 (Surface Normal Map)
+│   ├── rig_masks.png           # 四通道语义物理权重与刚性锁遮罩
+│   └── source_cg_reference.jpg # 原始 1:1 CG 重构基准图
+├── docs/                       # 文档展示预览图集
+│   ├── hero_beauty.jpg         # 0.4s 近景半身渲染
+│   ├── mid_smile_orbit.jpg     # 3.8s 环绕视差与抬眸浅笑关键帧
+│   ├── closeup_final.jpg       # 7.6s 85mm 面部特写定格
+│   ├── normal_map.jpg          # 法线贴图可视化
+│   └── hero_wireframe.jpg      # 46万面三维浮雕白模与线框拓扑
+├── output/
+│   └── anime_3d_cg_8s_24fps.mp4 # 8秒 24fps 电影级成品短片
+├── scripts/                    # 构建、服务与离线渲染工具链
+│   ├── build_3d_assets.py      # Python 16-bit 深度/法线/权重生成脚本
+│   ├── render_runner.js        # Headless WebGL 硬件加速渲染与 FFmpeg 合成器
+│   └── serve.js                # 本地交互预览开发服务器
+├── src/                        # 前端实时三维渲染源码
+│   ├── main.js                 # Three.js 场景、85mm 运镜状态机与交互控制
+│   └── cinematic3dCharacter.js # 46万面 3D 置换网格、动态法线重打光与亚像素表情着色器
+├── .gitignore
+├── index.html                  # WebGL 实时交互预览入口
+├── LICENSE                     # MIT License
+├── package.json
+└── README.md
 ```
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).

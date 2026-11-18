@@ -7,7 +7,7 @@ const job = process.argv[2] || 'preview'; // 'preview' | 'video'
 const res = parseInt(process.argv[3] || (job === 'preview' ? '1024' : '1080'), 10);
 const startFrame = parseInt(process.argv[4] || '0', 10);
 
-const rootDir = __dirname;
+const rootDir = path.resolve(__dirname, '..');
 const outDir = path.join(rootDir, 'output');
 const framesDir = path.join(outDir, 'frames');
 fs.mkdirSync(framesDir, { recursive: true });
